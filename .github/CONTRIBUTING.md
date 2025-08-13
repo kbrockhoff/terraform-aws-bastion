@@ -39,8 +39,8 @@ This project adheres to a code of conduct. By participating, you are expected to
 
 1. Clone your fork:
    ```bash
-   git clone https://github.com/YOUR-USERNAME/terraform-replace-me.git
-   cd terraform-replace-me
+   git clone https://github.com/YOUR-USERNAME/terraform-aws-bastion.git
+   cd terraform-aws-bastion
    ```
 
 2. Create a new branch:
