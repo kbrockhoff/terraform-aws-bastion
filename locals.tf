@@ -1,5 +1,5 @@
 locals {
-  # Environment type configuration maps
+  # Environment type defaults
   environment_defaults = {
     None = {
       rpo_hours                    = null
@@ -7,6 +7,9 @@ locals {
       monitoring_enabled           = var.monitoring_config.enabled
       alarms_enabled               = var.alarms_config.enabled
       kms_key_deletion_window_days = var.encryption_config.kms_key_deletion_window_days
+      enable_schedule              = var.enable_schedule
+      asg_min_size                 = var.asg_min_size
+      asg_max_size                 = var.asg_max_size
     }
     Ephemeral = {
       rpo_hours                    = null
@@ -14,6 +17,9 @@ locals {
       monitoring_enabled           = false
       alarms_enabled               = false
       kms_key_deletion_window_days = 7 # Minimal window for ephemeral environments
+      enable_schedule              = true
+      asg_min_size                 = 0
+      asg_max_size                 = 1
     }
     Development = {
       rpo_hours                    = 24
@@ -21,6 +27,9 @@ locals {
       monitoring_enabled           = false
       alarms_enabled               = false
       kms_key_deletion_window_days = 7 # Short window for development
+      enable_schedule              = true
+      asg_min_size                 = 0
+      asg_max_size                 = 1
     }
     Testing = {
       rpo_hours                    = 24
@@ -28,6 +37,9 @@ locals {
       monitoring_enabled           = false
       alarms_enabled               = false
       kms_key_deletion_window_days = 14 # Medium window for testing
+      enable_schedule              = true
+      asg_min_size                 = 0
+      asg_max_size                 = 1
     }
     UAT = {
       rpo_hours                    = 12
@@ -35,6 +47,9 @@ locals {
       monitoring_enabled           = false
       alarms_enabled               = false
       kms_key_deletion_window_days = 14 # Medium window for UAT
+      enable_schedule              = true
+      asg_min_size                 = 0
+      asg_max_size                 = 2
     }
     Production = {
       rpo_hours                    = 1
@@ -42,6 +57,9 @@ locals {
       monitoring_enabled           = true
       alarms_enabled               = true
       kms_key_deletion_window_days = 30 # Maximum window for production
+      enable_schedule              = false
+      asg_min_size                 = 1
+      asg_max_size                 = 3
     }
     MissionCritical = {
       rpo_hours                    = 0.083 # 5 minutes
@@ -49,6 +67,9 @@ locals {
       monitoring_enabled           = true
       alarms_enabled               = true
       kms_key_deletion_window_days = 30 # Maximum window for mission critical
+      enable_schedule              = false
+      asg_min_size                 = 2
+      asg_max_size                 = 5
     }
   }
 
@@ -75,11 +96,36 @@ locals {
   # Data tags take precedence over common tags
   common_data_tags = merge(local.common_tags, var.data_tags)
 
-  name_prefix = var.name_prefix
+  instance_name       = var.name_prefix
+  role_name           = "${var.name_prefix}-inst"
+  ebs_name            = "${var.name_prefix}-ebs"
+  kms_name            = "${var.name_prefix}-ssm"
+  kms_iam_policy_name = "${var.name_prefix}-kmsusage"
+
+  lookup_subnet = var.enabled
+  subnet_ids    = local.lookup_subnet ? data.aws_subnets.bastion[0].ids : []
+
+  security_group_ids = var.enabled ? (
+    var.use_standard_security_group ? [data.aws_security_group.bastion[0].id] : var.security_group_ids
+  ) : []
+
+  create_iam_resources = var.enabled && var.iam_instance_profile_name == null
+  iam_policies = local.create_iam_resources ? concat([
+    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+    "arn:aws:iam::aws:policy/AmazonSSMPatchAssociation",
+  ], var.additional_iam_policies) : []
+  iam_instance_profile_name = local.create_iam_resources ? (
+    aws_iam_instance_profile.bastion[0].name
+  ) : var.iam_instance_profile_name
+
+  userdata_b64 = base64encode(templatefile("${path.module}/${var.user_data_template}", {
+    user_data = join("\n", var.user_data)
+    ssh_user  = var.ssh_user
+  }))
 
   # KMS key logic - use provided key ID or create new one
   kms_key_id = var.enabled ? (
-    var.encryption_config.create_kms_key ? aws_kms_key.main[0].arn : var.encryption_config.kms_key_id
+    var.encryption_config.create_kms_key ? aws_kms_key.bastion[0].arn : var.encryption_config.kms_key_id
   ) : ""
 
   # SNS topic logic - use provided topic ARN or create new one
