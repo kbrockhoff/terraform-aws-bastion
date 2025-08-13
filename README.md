@@ -1,4 +1,4 @@
-# Terraform AWS EC2 Bastion Host Module
+# AWS EC2 Bastion Host Terraform Module
 
 Terraform module which creates a bastion host via autoscaling group on AWS. 
 It takes an opinionated approach to resource placement, naming, tagging, and well-architected best 
