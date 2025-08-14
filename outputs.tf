@@ -86,6 +86,60 @@ output "alarm_sns_topic_name" {
 }
 
 # ----
+# CloudWatch Alarm Outputs
+# ----
+
+output "alarm_unhealthy_instances_arn" {
+  description = "ARN of the unhealthy instances alarm"
+  value       = local.create_alarms ? aws_cloudwatch_metric_alarm.unhealthy_instances[0].arn : ""
+}
+
+output "alarm_failed_launches_arn" {
+  description = "ARN of the failed launches alarm"
+  value       = local.create_alarms ? aws_cloudwatch_metric_alarm.failed_launches[0].arn : ""
+}
+
+output "alarm_capacity_not_met_arn" {
+  description = "ARN of the capacity not met alarm"
+  value       = local.create_alarms ? aws_cloudwatch_metric_alarm.capacity_not_met[0].arn : ""
+}
+
+output "alarm_at_max_capacity_arn" {
+  description = "ARN of the at max capacity alarm"
+  value       = local.create_alarms && local.effective_config.asg_max_size > 1 ? aws_cloudwatch_metric_alarm.at_max_capacity[0].arn : ""
+}
+
+output "alarm_no_instances_running_arn" {
+  description = "ARN of the no instances running alarm"
+  value       = local.create_alarms && local.effective_config.asg_min_size > 0 ? aws_cloudwatch_metric_alarm.no_instances_running[0].arn : ""
+}
+
+output "alarm_termination_failures_arn" {
+  description = "ARN of the termination failures alarm"
+  value       = local.create_alarms ? aws_cloudwatch_metric_alarm.termination_failures[0].arn : ""
+}
+
+output "alarm_pending_termination_too_long_arn" {
+  description = "ARN of the pending termination too long alarm"
+  value       = local.create_alarms ? aws_cloudwatch_metric_alarm.pending_termination_too_long[0].arn : ""
+}
+
+output "alarm_excessive_scaling_arn" {
+  description = "ARN of the excessive scaling alarm"
+  value       = local.create_alarms ? aws_cloudwatch_metric_alarm.excessive_scaling[0].arn : ""
+}
+
+output "alarm_high_cpu_arn" {
+  description = "ARN of the high CPU alarm"
+  value       = local.create_alarms ? aws_cloudwatch_metric_alarm.high_cpu[0].arn : ""
+}
+
+output "alarm_status_check_failed_arn" {
+  description = "ARN of the status check failed alarm"
+  value       = local.create_alarms ? aws_cloudwatch_metric_alarm.status_check_failed[0].arn : ""
+}
+
+# ----
 # Pricing
 # ----
 

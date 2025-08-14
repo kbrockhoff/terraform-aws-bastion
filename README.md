@@ -129,6 +129,16 @@ This eliminates the need to manage different subnet IDs variable values for each
 | [aws_autoscaling_group.bastion](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group) | resource |
 | [aws_autoscaling_schedule.scale_down](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_schedule) | resource |
 | [aws_autoscaling_schedule.scale_up](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_schedule) | resource |
+| [aws_cloudwatch_metric_alarm.at_max_capacity](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
+| [aws_cloudwatch_metric_alarm.capacity_not_met](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
+| [aws_cloudwatch_metric_alarm.excessive_scaling](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
+| [aws_cloudwatch_metric_alarm.failed_launches](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
+| [aws_cloudwatch_metric_alarm.high_cpu](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
+| [aws_cloudwatch_metric_alarm.no_instances_running](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
+| [aws_cloudwatch_metric_alarm.pending_termination_too_long](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
+| [aws_cloudwatch_metric_alarm.status_check_failed](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
+| [aws_cloudwatch_metric_alarm.termination_failures](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
+| [aws_cloudwatch_metric_alarm.unhealthy_instances](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_iam_instance_profile.bastion](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) | resource |
 | [aws_iam_role.bastion](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy.kms_usage](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
@@ -137,6 +147,7 @@ This eliminates the need to manage different subnet IDs variable values for each
 | [aws_kms_key.bastion](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
 | [aws_launch_template.bastion](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template) | resource |
 | [aws_sns_topic.alarms](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic) | resource |
+| [aws_sns_topic_policy.alarms](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic_policy) | resource |
 
 ## Inputs
 
@@ -173,8 +184,18 @@ This eliminates the need to manage different subnet IDs variable values for each
 
 | Name | Description |
 |------|-------------|
+| <a name="output_alarm_at_max_capacity_arn"></a> [alarm\_at\_max\_capacity\_arn](#output\_alarm\_at\_max\_capacity\_arn) | ARN of the at max capacity alarm |
+| <a name="output_alarm_capacity_not_met_arn"></a> [alarm\_capacity\_not\_met\_arn](#output\_alarm\_capacity\_not\_met\_arn) | ARN of the capacity not met alarm |
+| <a name="output_alarm_excessive_scaling_arn"></a> [alarm\_excessive\_scaling\_arn](#output\_alarm\_excessive\_scaling\_arn) | ARN of the excessive scaling alarm |
+| <a name="output_alarm_failed_launches_arn"></a> [alarm\_failed\_launches\_arn](#output\_alarm\_failed\_launches\_arn) | ARN of the failed launches alarm |
+| <a name="output_alarm_high_cpu_arn"></a> [alarm\_high\_cpu\_arn](#output\_alarm\_high\_cpu\_arn) | ARN of the high CPU alarm |
+| <a name="output_alarm_no_instances_running_arn"></a> [alarm\_no\_instances\_running\_arn](#output\_alarm\_no\_instances\_running\_arn) | ARN of the no instances running alarm |
+| <a name="output_alarm_pending_termination_too_long_arn"></a> [alarm\_pending\_termination\_too\_long\_arn](#output\_alarm\_pending\_termination\_too\_long\_arn) | ARN of the pending termination too long alarm |
 | <a name="output_alarm_sns_topic_arn"></a> [alarm\_sns\_topic\_arn](#output\_alarm\_sns\_topic\_arn) | ARN of the SNS topic used for alarm notifications |
 | <a name="output_alarm_sns_topic_name"></a> [alarm\_sns\_topic\_name](#output\_alarm\_sns\_topic\_name) | Name of the SNS topic used for alarm notifications |
+| <a name="output_alarm_status_check_failed_arn"></a> [alarm\_status\_check\_failed\_arn](#output\_alarm\_status\_check\_failed\_arn) | ARN of the status check failed alarm |
+| <a name="output_alarm_termination_failures_arn"></a> [alarm\_termination\_failures\_arn](#output\_alarm\_termination\_failures\_arn) | ARN of the termination failures alarm |
+| <a name="output_alarm_unhealthy_instances_arn"></a> [alarm\_unhealthy\_instances\_arn](#output\_alarm\_unhealthy\_instances\_arn) | ARN of the unhealthy instances alarm |
 | <a name="output_autoscaling_group_arn"></a> [autoscaling\_group\_arn](#output\_autoscaling\_group\_arn) | ARN of the autoscaling group. |
 | <a name="output_autoscaling_group_id"></a> [autoscaling\_group\_id](#output\_autoscaling\_group\_id) | ID of the autoscaling group. |
 | <a name="output_autoscaling_group_name"></a> [autoscaling\_group\_name](#output\_autoscaling\_group\_name) | Name of the autoscaling group. |

@@ -132,4 +132,15 @@ locals {
     var.alarms_config.create_sns_topic ? aws_sns_topic.alarms[0].arn : var.alarms_config.sns_topic_arn
   ) : ""
 
+  # CloudWatch alarm counts for pricing calculations
+  # Total alarms: 10 (but some are conditional based on ASG configuration)
+  # - 8 alarms always created when alarms enabled
+  # - 1 alarm only if asg_max_size > 1 (at_max_capacity)
+  # - 1 alarm only if asg_min_size > 0 (no_instances_running)
+  actual_alarm_count = local.create_alarms ? (
+    8 +
+    (local.effective_config.asg_max_size > 1 ? 1 : 0) +
+    (local.effective_config.asg_min_size > 0 ? 1 : 0)
+  ) : 0
+
 }
