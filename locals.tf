@@ -81,11 +81,10 @@ locals {
   )
 
   # AWS account, partition, and region info
-  account_id         = data.aws_caller_identity.current.account_id
-  partition          = data.aws_partition.current.partition
-  region             = data.aws_region.current.region
-  dns_suffix         = data.aws_partition.current.dns_suffix
-  reverse_dns_prefix = data.aws_partition.current.reverse_dns_prefix
+  account_id = data.aws_caller_identity.current.account_id
+  partition  = data.aws_partition.current.partition
+  region     = data.aws_region.current.region
+  dns_suffix = data.aws_partition.current.dns_suffix
 
   # Common tags for all resources including module metadata
   common_tags = merge(var.tags, {
@@ -99,7 +98,6 @@ locals {
   instance_name       = var.name_prefix
   role_name           = "${var.name_prefix}-inst"
   ebs_name            = "${var.name_prefix}-ebs"
-  kms_name            = "${var.name_prefix}-ssm"
   kms_iam_policy_name = "${var.name_prefix}-kmsusage"
 
   lookup_subnet = var.enabled
