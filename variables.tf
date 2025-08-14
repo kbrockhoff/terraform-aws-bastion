@@ -107,7 +107,7 @@ variable "ami_owners" {
 variable "user_data_template" {
   description = "User Data template to use for provisioning EC2 Bastion Host."
   type        = string
-  default     = "templates/amazon-linux.sh"
+  default     = "templates/amazon-linux.sh.tpl"
 }
 
 variable "user_data" {
