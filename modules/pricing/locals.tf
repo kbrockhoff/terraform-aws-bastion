@@ -128,11 +128,30 @@ locals {
   # Calculate SNS requests based on CloudWatch alarms (720 = 24 hours * 30 days, assuming 1 alarm per hour)
   sns_requests_per_month = var.cloudwatch_alarm_count * 720
 
+  # EC2 Instance pricing calculations
+  ec2_instance_on_demand = local.pricing_enabled && var.ec2_instance_count > 0 && can(jsondecode(data.aws_pricing_product.ec2_instance[0].result).terms.OnDemand) ? (
+    values(jsondecode(data.aws_pricing_product.ec2_instance[0].result).terms.OnDemand)
+  ) : []
+  ec2_instance_hourly = length(local.ec2_instance_on_demand) > 0 ? (
+    values(local.ec2_instance_on_demand[0].priceDimensions)[0].pricePerUnit.USD
+  ) : "0.0052" # Default: t3.nano pricing
+  ec2_instance_monthly = tonumber(local.ec2_instance_hourly) * var.ec2_monthly_hours
+
+  # EBS Volume pricing calculations
+  ebs_volume_on_demand = local.pricing_enabled && var.ebs_volume_count > 0 && can(jsondecode(data.aws_pricing_product.ebs_volume[0].result).terms.OnDemand) ? (
+    values(jsondecode(data.aws_pricing_product.ebs_volume[0].result).terms.OnDemand)
+  ) : []
+  ebs_volume_monthly_per_gb = length(local.ebs_volume_on_demand) > 0 ? (
+    values(local.ebs_volume_on_demand[0].priceDimensions)[0].pricePerUnit.USD
+  ) : "0.08" # Default: gp3 pricing per GB per month
+
   costs = {
     kms_keys           = var.kms_key_count * tonumber(local.kms_monthly)
     cloudwatch_metrics = var.cloudwatch_metric_count * tonumber(local.cloudwatch_metrics_monthly)
     cloudwatch_alarms  = var.cloudwatch_alarm_count * tonumber(local.cloudwatch_alarms_monthly)
     sns_requests       = local.sns_requests_per_month * tonumber(local.sns_requests_per_unit)
+    ec2_instances      = var.ec2_instance_count * local.ec2_instance_monthly
+    ebs_volumes        = var.ebs_volume_count * var.ebs_volume_size_gb * tonumber(local.ebs_volume_monthly_per_gb)
   }
-  total_monthly_cost = local.costs.kms_keys + local.costs.cloudwatch_metrics + local.costs.cloudwatch_alarms + local.costs.sns_requests
+  total_monthly_cost = local.costs.kms_keys + local.costs.cloudwatch_metrics + local.costs.cloudwatch_alarms + local.costs.sns_requests + local.costs.ec2_instances + local.costs.ebs_volumes
 }

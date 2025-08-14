@@ -12,6 +12,12 @@ module "pricing" {
   enabled                 = var.enabled && var.cost_estimation_config.enabled
   region                  = local.region
   kms_key_count           = var.enabled && var.encryption_config.create_kms_key ? 1 : 0
-  cloudwatch_metric_count = var.enabled && var.alarms_config.enabled ? 10 : 0 # ASG and EC2 metrics monitored by alarms
-  cloudwatch_alarm_count  = var.enabled && var.alarms_config.enabled ? 10 : 0 # 10 CloudWatch alarms for comprehensive ASG monitoring
+  cloudwatch_metric_count = local.actual_alarm_count
+  cloudwatch_alarm_count  = local.actual_alarm_count
+  ec2_instance_count      = local.effective_config.asg_max_size
+  ec2_instance_type       = var.instance_type
+  ebs_volume_count        = local.effective_config.asg_max_size
+  ebs_volume_size_gb      = var.root_block_device_volume_size
+  ebs_volume_type         = "gp3" # Default EBS volume type since not configurable in launch template
+  ec2_monthly_hours       = local.monthly_hours
 }

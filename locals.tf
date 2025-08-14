@@ -143,4 +143,18 @@ locals {
     (local.effective_config.asg_min_size > 0 ? 1 : 0)
   ) : 0
 
+  # Calculate monthly hours based on schedule configuration
+  # Default schedule: 8 AM to 6 PM (10 hours), Monday to Friday (5 days)
+  # = 50 hours per week * 4.35 weeks per month = 217.5 hours per month
+  # If scheduling is disabled, assume 24/7 operation = 730.56 hours per month
+  monthly_hours = local.effective_config.enable_schedule ? (
+    # Parse the cron schedule to calculate hours per week, then multiply by weeks per month
+    # For default "0 8 * * MON-FRI" to "0 18 * * MON-FRI" = 10 hours/day * 5 days/week = 50 hours/week
+    # 50 hours/week * 4.345 weeks/month (365.25 days / 12 months / 7 days) = 217.5 hours/month
+    50 * (365.25 / 12 / 7)
+    ) : (
+    # No schedule means 24/7 operation: 24 hours/day * 365.25 days/year / 12 months = 730.56 hours/month
+    24 * 365.25 / 12
+  )
+
 }

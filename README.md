@@ -114,7 +114,7 @@ This eliminates the need to manage different subnet IDs variable values for each
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.9.0 |
 
 ## Modules
 
