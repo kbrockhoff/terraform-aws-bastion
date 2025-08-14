@@ -54,10 +54,26 @@ variable "networktags_name" {
   }
 }
 
-variable "subnet_networktags_value" {
+variable "networktags_value_vpc" {
+  description = "Network tag value to use for VPC lookup"
+  type        = string
+  default     = "standard"
+
+  validation {
+    condition     = var.networktags_value_vpc != null && var.networktags_value_vpc != ""
+    error_message = "Network tags value for VPC cannot be null or blank."
+  }
+}
+
+variable "networktags_value_subnets" {
   description = "Network tag values to use in looking up a random subnet to place instance in. Only used if subnet not specified."
   type        = string
   default     = "private"
+
+  validation {
+    condition     = contains(["public", "private", "database", "nonroutable"], var.networktags_value_subnets)
+    error_message = "Network tags value for subnets must be one of: public, private, database, nonroutable."
+  }
 }
 
 variable "use_standard_security_group" {
@@ -134,52 +150,49 @@ variable "root_block_device_volume_size" {
   default     = 8
 }
 
-variable "monitoring" {
-  description = "Launched EC2 instance will have detailed monitoring enabled."
-  type        = bool
-  default     = false
+variable "asg_config" {
+  description = "Configuration object for autoscaling group settings"
+  type = object({
+    min_size         = number
+    max_size         = number
+    desired_capacity = number
+  })
+  default = {
+    min_size         = 0
+    max_size         = 1
+    desired_capacity = 1
+  }
+
+  validation {
+    condition     = var.asg_config.min_size >= 0
+    error_message = "ASG minimum size must be 0 or greater."
+  }
+
+  validation {
+    condition     = var.asg_config.max_size >= var.asg_config.min_size
+    error_message = "ASG maximum size must be greater than or equal to minimum size."
+  }
+
+  validation {
+    condition     = var.asg_config.desired_capacity >= var.asg_config.min_size && var.asg_config.desired_capacity <= var.asg_config.max_size
+    error_message = "ASG desired capacity must be between minimum and maximum size."
+  }
 }
 
-variable "asg_min_size" {
-  description = "The minimum size of the autoscaling group."
-  type        = number
-  default     = 0
-}
-
-variable "asg_max_size" {
-  description = "The maximum size of the autoscaling group."
-  type        = number
-  default     = 1
-}
-
-variable "asg_desired_capacity" {
-  description = "The number of Amazon EC2 instances that should be running in the group."
-  type        = number
-  default     = 1
-}
-
-variable "enable_schedule" {
-  description = "Enable autoscaling schedules for non-business hours shutdown."
-  type        = bool
-  default     = false
-}
-
-variable "schedule_timezone" {
-  description = "Timezone for autoscaling schedules (e.g., 'America/New_York', 'UTC')."
-  type        = string
-  default     = "UTC"
-}
-
-variable "scale_down_schedule" {
-  description = "Cron expression for scaling down to 0 instances (e.g., '0 18 * * MON-FRI' for 6 PM weekdays)."
-  type        = string
-  default     = "0 18 * * MON-FRI"
-}
-
-variable "scale_up_schedule" {
-  description = "Cron expression for scaling back up (e.g., '0 8 * * MON-FRI' for 8 AM weekdays)."
-  type        = string
-  default     = "0 8 * * MON-FRI"
+variable "schedule_config" {
+  description = "Configuration object for autoscaling schedules"
+  type = object({
+    enabled             = bool
+    timezone            = string
+    scale_down_schedule = string
+    scale_up_schedule   = string
+  })
+  default = {
+    enabled             = false
+    timezone            = "UTC"
+    scale_down_schedule = "0 18 * * MON-FRI"
+    scale_up_schedule   = "0 8 * * MON-FRI"
+  }
 }
 
 # ----

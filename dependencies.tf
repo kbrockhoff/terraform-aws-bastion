@@ -7,7 +7,7 @@ data "aws_vpc" "standard" {
   count = local.lookup_subnet ? 1 : 0
 
   tags = {
-    "${var.networktags_name}" = "standard"
+    "${var.networktags_name}" = var.networktags_value_vpc
   }
 }
 
@@ -19,7 +19,7 @@ data "aws_subnets" "bastion" {
     values = [data.aws_vpc.standard[0].id]
   }
   tags = {
-    "${var.networktags_name}" = var.subnet_networktags_value
+    "${var.networktags_name}" = var.networktags_value_subnets
   }
 }
 

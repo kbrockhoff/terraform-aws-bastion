@@ -28,7 +28,7 @@ resource "aws_launch_template" "bastion" {
   }
 
   monitoring {
-    enabled = var.monitoring
+    enabled = var.monitoring_config.enabled
   }
 
   tag_specifications {
@@ -61,7 +61,7 @@ resource "aws_autoscaling_group" "bastion" {
 
   min_size         = local.effective_config.asg_min_size
   max_size         = local.effective_config.asg_max_size
-  desired_capacity = var.asg_desired_capacity
+  desired_capacity = var.asg_config.desired_capacity
 
   launch_template {
     id      = aws_launch_template.bastion[0].id
@@ -98,8 +98,8 @@ resource "aws_autoscaling_schedule" "scale_down" {
   min_size               = 0
   max_size               = local.effective_config.asg_max_size
   desired_capacity       = 0
-  recurrence             = var.scale_down_schedule
-  time_zone              = var.schedule_timezone
+  recurrence             = var.schedule_config.scale_down_schedule
+  time_zone              = var.schedule_config.timezone
   autoscaling_group_name = aws_autoscaling_group.bastion[0].name
 }
 
@@ -109,8 +109,8 @@ resource "aws_autoscaling_schedule" "scale_up" {
   scheduled_action_name  = "${var.name_prefix}-scale-up"
   min_size               = local.effective_config.asg_min_size
   max_size               = local.effective_config.asg_max_size
-  desired_capacity       = var.asg_desired_capacity
-  recurrence             = var.scale_up_schedule
-  time_zone              = var.schedule_timezone
+  desired_capacity       = var.asg_config.desired_capacity
+  recurrence             = var.schedule_config.scale_up_schedule
+  time_zone              = var.schedule_config.timezone
   autoscaling_group_name = aws_autoscaling_group.bastion[0].name
 }

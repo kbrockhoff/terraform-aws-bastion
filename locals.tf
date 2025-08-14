@@ -7,9 +7,9 @@ locals {
       monitoring_enabled           = var.monitoring_config.enabled
       alarms_enabled               = var.alarms_config.enabled
       kms_key_deletion_window_days = var.encryption_config.kms_key_deletion_window_days
-      enable_schedule              = var.enable_schedule
-      asg_min_size                 = var.asg_min_size
-      asg_max_size                 = var.asg_max_size
+      enable_schedule              = var.schedule_config.enabled
+      asg_min_size                 = var.asg_config.min_size
+      asg_max_size                 = var.asg_config.max_size
     }
     Ephemeral = {
       rpo_hours                    = null
