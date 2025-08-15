@@ -16,6 +16,7 @@ resource "aws_launch_template" "bastion" {
     device_name = "/dev/xvda"
     ebs {
       volume_size = var.root_block_device_volume_size
+      volume_type = local.ebs_volume_type
       encrypted   = true
       kms_key_id  = local.kms_key_id
     }

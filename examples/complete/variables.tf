@@ -138,12 +138,6 @@ variable "user_data_base64" {
   default     = ""
 }
 
-variable "ssh_user" {
-  description = "Default SSH user for this AMI. e.g. `ec2-user` for Amazon Linux and `ubuntu` for Ubuntu systems."
-  type        = string
-  default     = "ec2-user"
-}
-
 variable "root_block_device_volume_size" {
   description = "The volume size (in GiB) to provision for the root block device. It cannot be smaller than the AMI it refers to."
   type        = number

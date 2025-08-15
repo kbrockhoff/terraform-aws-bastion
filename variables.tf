@@ -107,7 +107,7 @@ variable "additional_iam_policies" {
 }
 
 variable "ami_filter" {
-  description = "List of maps used to create the AMI filter for the action runner AMI."
+  description = "List of maps used to create the AMI filter for the bastion host AMI."
   type        = map(list(string))
   default = {
     name = ["amzn2-ami-hvm-2.*-x86_64-ebs"]
@@ -115,7 +115,7 @@ variable "ami_filter" {
 }
 
 variable "ami_owners" {
-  description = "The list of owners used to select the AMI of action runner instances."
+  description = "The list of owners used to select the AMI of bastion host instances."
   type        = list(string)
   default     = ["amazon"]
 }
@@ -136,12 +136,6 @@ variable "user_data_base64" {
   description = "The Base64-encoded user data to provide when launching the instances. If this is set then `user_data` will not be used."
   type        = string
   default     = ""
-}
-
-variable "ssh_user" {
-  description = "Default SSH user for this AMI. e.g. `ec2-user` for Amazon Linux and `ubuntu` for Ubuntu systems."
-  type        = string
-  default     = "ec2-user"
 }
 
 variable "root_block_device_volume_size" {

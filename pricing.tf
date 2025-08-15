@@ -18,6 +18,6 @@ module "pricing" {
   ec2_instance_type       = var.instance_type
   ebs_volume_count        = local.effective_config.asg_max_size
   ebs_volume_size_gb      = var.root_block_device_volume_size
-  ebs_volume_type         = "gp3" # Default EBS volume type since not configurable in launch template
+  ebs_volume_type         = local.ebs_volume_type
   ec2_monthly_hours       = local.monthly_hours
 }

@@ -36,7 +36,6 @@ module "main" {
   user_data_template            = var.user_data_template
   user_data                     = var.user_data
   user_data_base64              = var.user_data_base64
-  ssh_user                      = var.ssh_user
   root_block_device_volume_size = var.root_block_device_volume_size
   asg_config                    = var.asg_config
   schedule_config               = var.schedule_config

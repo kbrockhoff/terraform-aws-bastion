@@ -6,7 +6,7 @@ practices.
 
 ## Features
 
-- Autoscaling groug managed SSM session capable bastion hosts
+- Autoscaling group managed SSM session capable bastion hosts
 - Scale to zero during off-hours
 - Monthly cost estimate submodule
 - Deployment pipeline least privilege IAM role submodule
@@ -15,21 +15,191 @@ practices.
 
 ### Basic Example
 
-```hcl
-module "example" {
-  source = "path/to/terraform-module"
+This example creates a bastion host with default settings:
 
-  # ... other required arguments ...
+```hcl
+# Main AWS provider - uses the current region
+provider "aws" {
+  # This is the default provider used for VPC resources
+}
+
+# Pricing provider - always uses us-east-1 where the AWS Pricing API is available
+provider "aws" {
+  alias  = "pricing"
+  region = "us-east-1"
+}
+
+module "bastion" {
+  source = "kbrockhoff/bastion/aws"
+
+  providers = {
+    aws         = aws
+    aws.pricing = aws.pricing
+  }
+
+  name_prefix = "dev-usw2"
+  
+  tags = {
+    Environment = "development"
+    ManagedBy   = "terraform"
+  }
 }
 ```
 
-### Complete Example
+### Complete Example with All Options
+
+This example demonstrates all available configuration options:
 
 ```hcl
-module "example" {
-  source = "path/to/terraform-module"
+# Main AWS provider - uses the current region
+provider "aws" {
+  # This is the default provider used for VPC resources
+}
 
-  # ... all available arguments ...
+# Pricing provider - always uses us-east-1 where the AWS Pricing API is available
+provider "aws" {
+  alias  = "pricing"
+  region = "us-east-1"
+}
+
+module "bastion" {
+  source = "kbrockhoff/bastion/aws"
+
+  providers = {
+    aws         = aws
+    aws.pricing = aws.pricing
+  }
+
+  # Core settings
+  enabled          = true
+  name_prefix      = "prod-usw2"
+  environment_type = "Production"
+  
+  # Tags
+  tags = {
+    Environment = "production"
+    Team        = "platform"
+    CostCenter  = "engineering"
+  }
+  
+  data_tags = {
+    DataClassification = "internal"
+  }
+  
+  # Cost estimation
+  cost_estimation_config = {
+    enabled = true
+  }
+  
+  # Network configuration
+  networktags_name          = "NetworkTags"
+  networktags_value_vpc     = "standard"
+  networktags_value_subnets = "private"
+  use_standard_security_group = true
+  security_group_ids        = []
+  
+  # Instance configuration
+  instance_type              = "t3.micro"
+  iam_instance_profile_name  = null  # Create new profile
+  additional_iam_policies    = []
+  
+  # AMI configuration
+  ami_filter = {
+    name = ["amzn2-ami-hvm-2.*-x86_64-ebs"]
+  }
+  ami_owners = ["amazon"]
+  
+  # User data
+  user_data_template = "templates/amazon-linux.sh.tpl"
+  user_data          = []
+  user_data_base64   = ""
+  ssh_user           = "ec2-user"
+  
+  # Storage
+  root_block_device_volume_size = 8
+  
+  # Auto Scaling Group configuration
+  asg_config = {
+    min_size         = 0
+    max_size         = 2
+    desired_capacity = 1
+  }
+  
+  # Schedule configuration (scale to zero during off-hours)
+  schedule_config = {
+    enabled             = true
+    timezone            = "America/Los_Angeles"
+    scale_down_schedule = "0 18 * * MON-FRI"  # 6 PM weekdays
+    scale_up_schedule   = "0 8 * * MON-FRI"   # 8 AM weekdays
+  }
+  
+  # Encryption configuration
+  encryption_config = {
+    create_kms_key               = true
+    kms_key_id                   = ""
+    kms_key_deletion_window_days = 30
+  }
+  
+  # Monitoring configuration
+  monitoring_config = {
+    enabled = true
+  }
+  
+  # Alarms configuration
+  alarms_config = {
+    enabled          = true
+    create_sns_topic = true
+    sns_topic_arn    = ""
+  }
+}
+```
+
+### Minimal Production Example with Schedules
+
+This example creates a production bastion that scales to zero during off-hours:
+
+```hcl
+provider "aws" {}
+
+provider "aws" {
+  alias  = "pricing"
+  region = "us-east-1"
+}
+
+module "bastion" {
+  source = "kbrockhoff/bastion/aws"
+
+  providers = {
+    aws         = aws
+    aws.pricing = aws.pricing
+  }
+
+  name_prefix      = "prod-usw2"
+  environment_type = "Production"
+  
+  # Enable scheduled scaling to save costs
+  schedule_config = {
+    enabled             = true
+    timezone            = "America/Los_Angeles"
+    scale_down_schedule = "0 19 * * MON-FRI"  # Scale down at 7 PM
+    scale_up_schedule   = "0 7 * * MON-FRI"   # Scale up at 7 AM
+  }
+  
+  # Enable monitoring and alarms
+  monitoring_config = {
+    enabled = true
+  }
+  
+  alarms_config = {
+    enabled          = true
+    create_sns_topic = true
+    sns_topic_arn    = ""
+  }
+  
+  tags = {
+    Environment = "production"
+    Team        = "infrastructure"
+  }
 }
 ```
 
@@ -156,8 +326,8 @@ This eliminates the need to manage different subnet IDs variable values for each
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Organization unique prefix to use for resource names. Recommend including environment and region. e.g. 'prod-usw2' | `string` | n/a | yes |
 | <a name="input_additional_iam_policies"></a> [additional\_iam\_policies](#input\_additional\_iam\_policies) | Existing IAM policies (as ARNs) this instance should have in addition to AmazonSSMManagedInstanceCore. | `list(string)` | `[]` | no |
 | <a name="input_alarms_config"></a> [alarms\_config](#input\_alarms\_config) | Configuration object for metric alarms and notifications | <pre>object({<br/>    enabled          = bool<br/>    create_sns_topic = bool<br/>    sns_topic_arn    = string<br/>  })</pre> | <pre>{<br/>  "create_sns_topic": true,<br/>  "enabled": false,<br/>  "sns_topic_arn": ""<br/>}</pre> | no |
-| <a name="input_ami_filter"></a> [ami\_filter](#input\_ami\_filter) | List of maps used to create the AMI filter for the action runner AMI. | `map(list(string))` | <pre>{<br/>  "name": [<br/>    "amzn2-ami-hvm-2.*-x86_64-ebs"<br/>  ]<br/>}</pre> | no |
-| <a name="input_ami_owners"></a> [ami\_owners](#input\_ami\_owners) | The list of owners used to select the AMI of action runner instances. | `list(string)` | <pre>[<br/>  "amazon"<br/>]</pre> | no |
+| <a name="input_ami_filter"></a> [ami\_filter](#input\_ami\_filter) | List of maps used to create the AMI filter for the bastion host AMI. | `map(list(string))` | <pre>{<br/>  "name": [<br/>    "amzn2-ami-hvm-2.*-x86_64-ebs"<br/>  ]<br/>}</pre> | no |
+| <a name="input_ami_owners"></a> [ami\_owners](#input\_ami\_owners) | The list of owners used to select the AMI of bastion host instances. | `list(string)` | <pre>[<br/>  "amazon"<br/>]</pre> | no |
 | <a name="input_asg_config"></a> [asg\_config](#input\_asg\_config) | Configuration object for autoscaling group settings | <pre>object({<br/>    min_size         = number<br/>    max_size         = number<br/>    desired_capacity = number<br/>  })</pre> | <pre>{<br/>  "desired_capacity": 1,<br/>  "max_size": 1,<br/>  "min_size": 0<br/>}</pre> | no |
 | <a name="input_cost_estimation_config"></a> [cost\_estimation\_config](#input\_cost\_estimation\_config) | Configuration object for monthly cost estimation | <pre>object({<br/>    enabled = bool<br/>  })</pre> | <pre>{<br/>  "enabled": true<br/>}</pre> | no |
 | <a name="input_data_tags"></a> [data\_tags](#input\_data\_tags) | Additional tags to apply specifically to data storage resources (e.g., S3, RDS, EBS) beyond the common tags. | `map(string)` | `{}` | no |
@@ -173,7 +343,6 @@ This eliminates the need to manage different subnet IDs variable values for each
 | <a name="input_root_block_device_volume_size"></a> [root\_block\_device\_volume\_size](#input\_root\_block\_device\_volume\_size) | The volume size (in GiB) to provision for the root block device. It cannot be smaller than the AMI it refers to. | `number` | `8` | no |
 | <a name="input_schedule_config"></a> [schedule\_config](#input\_schedule\_config) | Configuration object for autoscaling schedules | <pre>object({<br/>    enabled             = bool<br/>    timezone            = string<br/>    scale_down_schedule = string<br/>    scale_up_schedule   = string<br/>  })</pre> | <pre>{<br/>  "enabled": false,<br/>  "scale_down_schedule": "0 18 * * MON-FRI",<br/>  "scale_up_schedule": "0 8 * * MON-FRI",<br/>  "timezone": "UTC"<br/>}</pre> | no |
 | <a name="input_security_group_ids"></a> [security\_group\_ids](#input\_security\_group\_ids) | Security groups to apply to the instance if not using standard. | `list(string)` | `[]` | no |
-| <a name="input_ssh_user"></a> [ssh\_user](#input\_ssh\_user) | Default SSH user for this AMI. e.g. `ec2-user` for Amazon Linux and `ubuntu` for Ubuntu systems. | `string` | `"ec2-user"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags/labels to apply to all resources | `map(string)` | `{}` | no |
 | <a name="input_use_standard_security_group"></a> [use\_standard\_security\_group](#input\_use\_standard\_security\_group) | Set to false to supply own security groups instead of using one provided by standard VPC. | `bool` | `true` | no |
 | <a name="input_user_data"></a> [user\_data](#input\_user\_data) | User data content. Will be ignored if `user_data_base64` is set. | `list(string)` | `[]` | no |

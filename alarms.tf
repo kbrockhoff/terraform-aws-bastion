@@ -55,7 +55,7 @@ resource "aws_cloudwatch_metric_alarm" "unhealthy_instances" {
   alarm_description   = "Triggers when ASG has unhealthy instances"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 2
-  metric_name         = "UnHealthyHostCount"
+  metric_name         = "GroupUnhealthyInstances"
   namespace           = "AWS/AutoScaling"
   period              = 300
   statistic           = "Average"
@@ -143,7 +143,7 @@ resource "aws_cloudwatch_metric_alarm" "capacity_not_met" {
 
   metric_query {
     id          = "capacity_diff"
-    expression  = "actual / desired * 100"
+    expression  = "IF(desired > 0 AND actual < desired, 1, 0)"
     label       = "Capacity Achievement Percentage"
     return_data = true
   }

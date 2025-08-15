@@ -99,6 +99,7 @@ locals {
   role_name           = "${var.name_prefix}-inst"
   ebs_name            = "${var.name_prefix}-ebs"
   kms_iam_policy_name = "${var.name_prefix}-kmsusage"
+  ebs_volume_type     = "gp3"
 
   lookup_subnet = var.enabled
   subnet_ids    = local.lookup_subnet ? data.aws_subnets.bastion[0].ids : []
@@ -118,7 +119,6 @@ locals {
 
   userdata_b64 = base64encode(templatefile("${path.module}/${var.user_data_template}", {
     user_data = join("\n", var.user_data)
-    ssh_user  = var.ssh_user
   }))
 
   # KMS key logic - use provided key ID or create new one
@@ -143,18 +143,32 @@ locals {
     (local.effective_config.asg_min_size > 0 ? 1 : 0)
   ) : 0
 
-  # Calculate monthly hours based on schedule configuration
-  # Default schedule: 8 AM to 6 PM (10 hours), Monday to Friday (5 days)
-  # = 50 hours per week * 4.35 weeks per month = 217.5 hours per month
-  # If scheduling is disabled, assume 24/7 operation = 730.56 hours per month
-  monthly_hours = local.effective_config.enable_schedule ? (
-    # Parse the cron schedule to calculate hours per week, then multiply by weeks per month
-    # For default "0 8 * * MON-FRI" to "0 18 * * MON-FRI" = 10 hours/day * 5 days/week = 50 hours/week
-    # 50 hours/week * 4.345 weeks/month (365.25 days / 12 months / 7 days) = 217.5 hours/month
-    50 * (365.25 / 12 / 7)
-    ) : (
-    # No schedule means 24/7 operation: 24 hours/day * 365.25 days/year / 12 months = 730.56 hours/month
-    24 * 365.25 / 12
-  )
+  # Parse cron schedules to extract hour values
+  # Format: "minute hour * * day-of-week"
+  # Example: "0 8 * * MON-FRI" = 8 AM, "0 18 * * MON-FRI" = 6 PM
+  scale_up_hour = local.effective_config.enable_schedule ? (
+    tonumber(split(" ", var.schedule_config.scale_up_schedule)[1])
+  ) : 0
+
+  scale_down_hour = local.effective_config.enable_schedule ? (
+    tonumber(split(" ", var.schedule_config.scale_down_schedule)[1])
+  ) : 24
+
+  # Calculate daily hours of operation
+  daily_hours = local.effective_config.enable_schedule ? (
+    local.scale_down_hour - local.scale_up_hour
+  ) : 24
+
+  # Parse day-of-week from cron schedule to determine weekly days
+  # "MON-FRI" = 5 days, "MON-SUN" or "*" = 7 days
+  schedule_days = local.effective_config.enable_schedule ? (
+    contains(["MON-FRI", "1-5"], try(split(" ", var.schedule_config.scale_up_schedule)[4], "*")) ? 5 : 7
+  ) : 7
+
+  # Calculate monthly hours based on actual schedule configuration
+  # hours_per_week = daily_hours * schedule_days
+  # weeks_per_month = 365.25 days/year / 12 months / 7 days/week = 4.345
+  # monthly_hours = hours_per_week * weeks_per_month
+  monthly_hours = local.daily_hours * local.schedule_days * (365.25 / 12 / 7)
 
 }
