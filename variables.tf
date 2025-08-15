@@ -190,7 +190,6 @@ variable "additional_data_volume_config" {
   }
 
   validation {
-    condition     = can(regex("^/[a-z0-9_-]+$", var.additional_data_volume_config.mount_point))
     condition     = can(regex("^/[a-zA-Z0-9_/-]+$", var.additional_data_volume_config.mount_point))
     error_message = "Mount point must be an absolute path starting with / and may contain letters, numbers, underscores, hyphens, and subdirectories (e.g., /opt/data, /var/log)."
   }
