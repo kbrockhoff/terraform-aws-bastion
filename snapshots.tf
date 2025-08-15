@@ -2,24 +2,87 @@
 # Data Lifecycle Manager for EBS Snapshots
 # ----
 
+# IAM assume role policy document for DLM service
+data "aws_iam_policy_document" "dlm_assume_role_policy" {
+  count = var.enabled && var.additional_data_volume_config.enabled && var.data_volume_snapshot_config.enabled ? 1 : 0
+
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["dlm.${local.dns_suffix}"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+# IAM policy document for DLM service permissions
+data "aws_iam_policy_document" "dlm_lifecycle_policy" {
+  count = var.enabled && var.additional_data_volume_config.enabled && var.data_volume_snapshot_config.enabled ? 1 : 0
+
+  # Allow snapshot creation and tagging on volumes
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "ec2:CreateSnapshot",
+      "ec2:CreateTags"
+    ]
+
+    resources = [
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:volume/*",
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:snapshot/*"
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "ec2:ResourceTag/DLMSnapshot"
+      values   = ["true"]
+    }
+  }
+
+  # Allow snapshot deletion and modification
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "ec2:DeleteSnapshot",
+      "ec2:ModifySnapshotAttribute"
+    ]
+
+    resources = [
+      "arn:${local.partition}:ec2:${local.region}:${local.account_id}:snapshot/*"
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "ec2:ResourceTag/SnapshotType"
+      values   = ["automated"]
+    }
+  }
+
+  # Allow describe operations (read-only)
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "ec2:DescribeInstances",
+      "ec2:DescribeSnapshots",
+      "ec2:DescribeVolumes"
+    ]
+
+    resources = ["*"]
+  }
+}
+
 # IAM role for DLM service
 resource "aws_iam_role" "dlm_lifecycle_role" {
   count = var.enabled && var.additional_data_volume_config.enabled && var.data_volume_snapshot_config.enabled ? 1 : 0
 
-  name = "${var.name_prefix}-dlm-lifecycle-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "dlm.amazonaws.com"
-        }
-      }
-    ]
-  })
+  name               = "${var.name_prefix}-dlm-lifecycle-role"
+  assume_role_policy = data.aws_iam_policy_document.dlm_assume_role_policy[0].json
 
   tags = merge(local.common_tags, {
     Name = "${var.name_prefix}-dlm-lifecycle-role"
@@ -30,27 +93,9 @@ resource "aws_iam_role" "dlm_lifecycle_role" {
 resource "aws_iam_role_policy" "dlm_lifecycle_policy" {
   count = var.enabled && var.additional_data_volume_config.enabled && var.data_volume_snapshot_config.enabled ? 1 : 0
 
-  name = "${var.name_prefix}-dlm-lifecycle-policy"
-  role = aws_iam_role.dlm_lifecycle_role[0].id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "ec2:CreateSnapshot",
-          "ec2:CreateTags",
-          "ec2:DeleteSnapshot",
-          "ec2:DescribeInstances",
-          "ec2:DescribeSnapshots",
-          "ec2:DescribeVolumes",
-          "ec2:ModifySnapshotAttribute"
-        ]
-        Resource = "*"
-      }
-    ]
-  })
+  name   = "${var.name_prefix}-dlm-lifecycle-policy"
+  role   = aws_iam_role.dlm_lifecycle_role[0].id
+  policy = data.aws_iam_policy_document.dlm_lifecycle_policy[0].json
 }
 
 # DLM lifecycle policy for data volume snapshots

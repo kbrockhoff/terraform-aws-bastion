@@ -311,8 +311,11 @@ This eliminates the need to manage different subnet IDs variable values for each
 | [aws_cloudwatch_metric_alarm.status_check_failed](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_cloudwatch_metric_alarm.termination_failures](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_cloudwatch_metric_alarm.unhealthy_instances](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
+| [aws_dlm_lifecycle_policy.data_volume_snapshots](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/dlm_lifecycle_policy) | resource |
 | [aws_iam_instance_profile.bastion](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) | resource |
 | [aws_iam_role.bastion](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role.dlm_lifecycle_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy.dlm_lifecycle_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy.kms_usage](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy_attachment.additional](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_kms_alias.bastion](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
@@ -334,11 +337,12 @@ This eliminates the need to manage different subnet IDs variable values for each
 | <a name="input_asg_config"></a> [asg\_config](#input\_asg\_config) | Configuration object for autoscaling group settings | <pre>object({<br/>    min_size         = number<br/>    max_size         = number<br/>    desired_capacity = number<br/>  })</pre> | <pre>{<br/>  "desired_capacity": 1,<br/>  "max_size": 1,<br/>  "min_size": 0<br/>}</pre> | no |
 | <a name="input_cost_estimation_config"></a> [cost\_estimation\_config](#input\_cost\_estimation\_config) | Configuration object for monthly cost estimation | <pre>object({<br/>    enabled = bool<br/>  })</pre> | <pre>{<br/>  "enabled": true<br/>}</pre> | no |
 | <a name="input_data_tags"></a> [data\_tags](#input\_data\_tags) | Additional tags to apply specifically to data storage resources (e.g., S3, RDS, EBS) beyond the common tags. | `map(string)` | `{}` | no |
+| <a name="input_data_volume_snapshot_config"></a> [data\_volume\_snapshot\_config](#input\_data\_volume\_snapshot\_config) | Configuration for automated EBS snapshots of the additional data volume using AWS Data Lifecycle Manager (DLM) | <pre>object({<br/>    enabled           = bool<br/>    schedule_name     = string<br/>    schedule_interval = number<br/>    schedule_times    = list(string)<br/>    retention_count   = number<br/>    copy_tags         = bool<br/>  })</pre> | <pre>{<br/>  "copy_tags": true,<br/>  "enabled": false,<br/>  "retention_count": 7,<br/>  "schedule_interval": 24,<br/>  "schedule_name": "daily-snapshots",<br/>  "schedule_times": [<br/>    "03:00"<br/>  ]<br/>}</pre> | no |
 | <a name="input_enabled"></a> [enabled](#input\_enabled) | Set to false to prevent the module from creating any resources | `bool` | `true` | no |
 | <a name="input_encryption_config"></a> [encryption\_config](#input\_encryption\_config) | Configuration object for encryption settings and KMS key management | <pre>object({<br/>    create_kms_key               = bool<br/>    kms_key_id                   = string<br/>    kms_key_deletion_window_days = number<br/>  })</pre> | <pre>{<br/>  "create_kms_key": true,<br/>  "kms_key_deletion_window_days": 14,<br/>  "kms_key_id": ""<br/>}</pre> | no |
 | <a name="input_environment_type"></a> [environment\_type](#input\_environment\_type) | Environment type for resource configuration defaults. Select 'None' to use individual config values. | `string` | `"Development"` | no |
 | <a name="input_iam_instance_profile_name"></a> [iam\_instance\_profile\_name](#input\_iam\_instance\_profile\_name) | The name of the IAM instance profile to run the instance as or leave null to create a profile. | `string` | `null` | no |
-| <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | Bastion instance type. | `string` | `"t2.micro"` | no |
+| <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | Bastion instance type. | `string` | `"t3.micro"` | no |
 | <a name="input_monitoring_config"></a> [monitoring\_config](#input\_monitoring\_config) | Configuration object for optional monitoring | <pre>object({<br/>    enabled = bool<br/>  })</pre> | <pre>{<br/>  "enabled": false<br/>}</pre> | no |
 | <a name="input_networktags_name"></a> [networktags\_name](#input\_networktags\_name) | Name of the network tags key used for subnet classification | `string` | `"NetworkTags"` | no |
 | <a name="input_networktags_value_subnets"></a> [networktags\_value\_subnets](#input\_networktags\_value\_subnets) | Network tag values to use in looking up a random subnet to place instance in. Only used if subnet not specified. | `string` | `"private"` | no |
@@ -374,6 +378,9 @@ This eliminates the need to manage different subnet IDs variable values for each
 | <a name="output_autoscaling_schedule_scale_down_arn"></a> [autoscaling\_schedule\_scale\_down\_arn](#output\_autoscaling\_schedule\_scale\_down\_arn) | ARN of the scale down autoscaling schedule. |
 | <a name="output_autoscaling_schedule_scale_up_arn"></a> [autoscaling\_schedule\_scale\_up\_arn](#output\_autoscaling\_schedule\_scale\_up\_arn) | ARN of the scale up autoscaling schedule. |
 | <a name="output_cost_breakdown"></a> [cost\_breakdown](#output\_cost\_breakdown) | Detailed breakdown of monthly costs by service |
+| <a name="output_dlm_iam_role_arn"></a> [dlm\_iam\_role\_arn](#output\_dlm\_iam\_role\_arn) | ARN of the IAM role used by DLM for snapshot management |
+| <a name="output_dlm_lifecycle_policy_arn"></a> [dlm\_lifecycle\_policy\_arn](#output\_dlm\_lifecycle\_policy\_arn) | ARN of the DLM lifecycle policy for data volume snapshots |
+| <a name="output_dlm_lifecycle_policy_id"></a> [dlm\_lifecycle\_policy\_id](#output\_dlm\_lifecycle\_policy\_id) | ID of the DLM lifecycle policy for data volume snapshots |
 | <a name="output_iam_instance_profile_name"></a> [iam\_instance\_profile\_name](#output\_iam\_instance\_profile\_name) | Name of the IAM instance profile attached to the instance. |
 | <a name="output_kms_alias_name"></a> [kms\_alias\_name](#output\_kms\_alias\_name) | Name of the KMS key alias |
 | <a name="output_kms_key_arn"></a> [kms\_key\_arn](#output\_kms\_key\_arn) | ARN of the KMS key used for encryption |
