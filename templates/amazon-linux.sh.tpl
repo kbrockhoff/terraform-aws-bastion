@@ -70,4 +70,12 @@ echo "Remounting root filesystem as read-only..."
 mount -o remount,ro /
 echo "Root filesystem is now read-only"
 
+
 ${user_data}
+
+##
+## Make root filesystem read-only (remount)
+##
+echo "Remounting root filesystem as read-only..."
+mount -o remount,ro /
+echo "Root filesystem is now read-only"
