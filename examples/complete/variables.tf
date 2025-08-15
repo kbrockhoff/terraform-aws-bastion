@@ -164,6 +164,26 @@ variable "additional_data_volume_config" {
   }
 }
 
+variable "data_volume_snapshot_config" {
+  description = "Configuration for automated EBS snapshots of the additional data volume using AWS Data Lifecycle Manager (DLM)"
+  type = object({
+    enabled           = bool
+    schedule_name     = string
+    schedule_interval = number
+    schedule_times    = list(string)
+    retention_count   = number
+    copy_tags         = bool
+  })
+  default = {
+    enabled           = false
+    schedule_name     = "daily-snapshots"
+    schedule_interval = 24
+    schedule_times    = ["03:00"]
+    retention_count   = 7
+    copy_tags         = true
+  }
+}
+
 variable "asg_config" {
   description = "Configuration object for autoscaling group settings"
   type = object({

@@ -152,3 +152,22 @@ output "cost_breakdown" {
   description = "Detailed breakdown of monthly costs by service"
   value       = module.pricing.cost_breakdown
 }
+
+# ----
+# Data Lifecycle Manager
+# ----
+
+output "dlm_lifecycle_policy_arn" {
+  description = "ARN of the DLM lifecycle policy for data volume snapshots"
+  value       = var.enabled && var.additional_data_volume_config.enabled && var.data_volume_snapshot_config.enabled ? aws_dlm_lifecycle_policy.data_volume_snapshots[0].arn : ""
+}
+
+output "dlm_lifecycle_policy_id" {
+  description = "ID of the DLM lifecycle policy for data volume snapshots"
+  value       = var.enabled && var.additional_data_volume_config.enabled && var.data_volume_snapshot_config.enabled ? aws_dlm_lifecycle_policy.data_volume_snapshots[0].id : ""
+}
+
+output "dlm_iam_role_arn" {
+  description = "ARN of the IAM role used by DLM for snapshot management"
+  value       = var.enabled && var.additional_data_volume_config.enabled && var.data_volume_snapshot_config.enabled ? aws_iam_role.dlm_lifecycle_role[0].arn : ""
+}

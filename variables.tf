@@ -195,6 +195,49 @@ variable "additional_data_volume_config" {
   }
 }
 
+variable "data_volume_snapshot_config" {
+  description = "Configuration for automated EBS snapshots of the additional data volume using AWS Data Lifecycle Manager (DLM)"
+  type = object({
+    enabled           = bool
+    schedule_name     = string
+    schedule_interval = number
+    schedule_times    = list(string)
+    retention_count   = number
+    copy_tags         = bool
+  })
+  default = {
+    enabled           = false
+    schedule_name     = "daily-snapshots"
+    schedule_interval = 24
+    schedule_times    = ["03:00"]
+    retention_count   = 7
+    copy_tags         = true
+  }
+
+  validation {
+    condition     = var.data_volume_snapshot_config.schedule_interval >= 1 && var.data_volume_snapshot_config.schedule_interval <= 24
+    error_message = "Schedule interval must be between 1 and 24 hours."
+  }
+
+  validation {
+    condition     = var.data_volume_snapshot_config.retention_count >= 1 && var.data_volume_snapshot_config.retention_count <= 1000
+    error_message = "Retention count must be between 1 and 1000 snapshots."
+  }
+
+  validation {
+    condition = alltrue([
+      for time in var.data_volume_snapshot_config.schedule_times :
+      can(regex("^([01][0-9]|2[0-3]):[0-5][0-9]$", time))
+    ])
+    error_message = "Schedule times must be in HH:MM format (24-hour), e.g., ['03:00', '15:30']."
+  }
+
+  validation {
+    condition     = length(var.data_volume_snapshot_config.schedule_times) >= 1 && length(var.data_volume_snapshot_config.schedule_times) <= 3
+    error_message = "Must specify between 1 and 3 schedule times per day."
+  }
+}
+
 variable "asg_config" {
   description = "Configuration object for autoscaling group settings"
   type = object({

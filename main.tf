@@ -62,6 +62,19 @@ resource "aws_launch_template" "bastion" {
     })
   }
 
+  # Additional tag specifications for data volume with DLM snapshot tags
+  dynamic "tag_specifications" {
+    for_each = var.additional_data_volume_config.enabled ? [1] : []
+    content {
+      resource_type = "volume"
+      tags = merge(local.common_data_tags, {
+        Name        = "${var.name_prefix}-data-volume"
+        DLMSnapshot = var.data_volume_snapshot_config.enabled ? "true" : "false"
+        VolumeType  = "data"
+      })
+    }
+  }
+
   tags = merge(local.common_tags, {
     Name = "${var.name_prefix}-launch-template"
   })
