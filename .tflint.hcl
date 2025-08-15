@@ -20,3 +20,8 @@ plugin "aws" {
 rule "terraform_workspace_remote" {
   enabled = false  # Allow local state for examples
 }
+
+# Needed because interpolation-only is required for tag names
+rule "terraform_deprecated_interpolation" {
+  enabled = false
+}

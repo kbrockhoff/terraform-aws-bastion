@@ -52,19 +52,19 @@ jobs:
         category: checkov
 
     # Uncomment in actual module
-    # - name: Setup TFLint
-    #   uses: terraform-linters/setup-tflint@v4
-    #   with:
-    #     tflint_version: v0.58.1
+    - name: Setup TFLint
+      uses: terraform-linters/setup-tflint@v4
+      with:
+        tflint_version: v0.58.1
 
-    # - name: Show TFLint version
-    #   run: tflint --version
+    - name: Show TFLint version
+      run: tflint --version
 
-    # - name: Init TFLint
-    #   run: tflint --init
+    - name: Init TFLint
+      run: tflint --init
 
-    # - name: Run TFLint
-    #   run: tflint -f compact
+    - name: Run TFLint
+      run: tflint -f compact
       
     # Root module validation skipped - requires provider configuration
     # Root module is designed to be used as a module with providers passed in

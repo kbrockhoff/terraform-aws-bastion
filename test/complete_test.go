@@ -35,16 +35,19 @@ func TestTerraformCompleteExample(t *testing.T) {
 	// Verify the plan completed without errors and shows expected resource creation
 	assert.NotEmpty(t, planOutput)
 	
-	// Verify core KMS resources are planned for creation
-	assert.Contains(t, planOutput, "module.main.aws_kms_key.main[0]")
-	assert.Contains(t, planOutput, "module.main.aws_kms_alias.main[0]")
+	// Verify core resources are planned for creation
+	assert.Contains(t, planOutput, "module.main.aws_launch_template.bastion[0]")
+	assert.Contains(t, planOutput, "module.main.aws_autoscaling_group.bastion[0]")
+	assert.Contains(t, planOutput, "module.main.aws_iam_role.bastion[0]")
+	assert.Contains(t, planOutput, "module.main.aws_kms_key.bastion[0]")
 	assert.Contains(t, planOutput, "will be created")
 	
 	// Verify SNS topic IS created when alarms_config.enabled=true (set in complete example)
 	assert.Contains(t, planOutput, "module.main.aws_sns_topic.alarms[0]")
 	
-	// Verify expected resource count (3 resources: KMS key + alias + SNS topic)
-	assert.Contains(t, planOutput, "3 to add, 0 to change, 0 to destroy")
+	// Verify schedules are NOT created for environment_type="None"
+	assert.NotContains(t, planOutput, "module.main.aws_autoscaling_schedule.scale_down")
+	assert.NotContains(t, planOutput, "module.main.aws_autoscaling_schedule.scale_up")
 
 }
 

@@ -59,19 +59,20 @@ Source: .ruler/brockhoff-git.md
 ---
 Source: .ruler/instructions.md
 ---
-# CLOUD XXX Terraform Module Guide for AI Agents
+# AWS Bastion Host Terraform Module Guide for AI Agents
 
-What the goal of this module is.
+Provisions an AWS autoscaling groups and associated launch template which manages SSM session capable bastion hosts.
+No other types of connections are allowed. Provides the ability to scale down to zero instances during off-hours.
 
 ## Components
 
-### Component 1
-- Requirement
-- Requirement
+### Launch Template
+- Configures it's instances to support SSM sessions
+- Installs commonly used network troubleshooting tools
 
-### Component 2
-- Requirement
-- Requirement
+### Autoscaling Group
+- Supports scheduled scaling to zero during off-hours
+- Uses network tags to determine which subnets to deploy to
 
 ---
 Source: .ruler/terraform-module.md

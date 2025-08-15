@@ -25,7 +25,7 @@ variable "tags" {
 }
 
 variable "data_tags" {
-  description = "Tags/labels to apply to all resources with data-at-rest"
+  description = "Additional tags to apply specifically to data storage resources (e.g., S3, RDS, EBS) beyond the common tags."
   type        = map(string)
   default     = {}
 }
@@ -43,16 +43,6 @@ variable "environment_type" {
   }
 }
 
-variable "cost_estimation_config" {
-  description = "Configuration object for monthly cost estimation"
-  type = object({
-    enabled = bool
-  })
-  default = {
-    enabled = true
-  }
-}
-
 variable "networktags_name" {
   description = "Name of the network tags key used for subnet classification"
   type        = string
@@ -61,6 +51,181 @@ variable "networktags_name" {
   validation {
     condition     = var.networktags_name != null && var.networktags_name != ""
     error_message = "Network tags name cannot be null or blank."
+  }
+}
+
+variable "networktags_value_vpc" {
+  description = "Network tag value to use for VPC lookup"
+  type        = string
+  default     = "standard"
+
+  validation {
+    condition     = var.networktags_value_vpc != null && var.networktags_value_vpc != ""
+    error_message = "Network tags value for VPC cannot be null or blank."
+  }
+}
+
+variable "networktags_value_subnets" {
+  description = "Network tag values to use in looking up a random subnet to place instance in. Only used if subnet not specified."
+  type        = string
+  default     = "private"
+
+  validation {
+    condition     = contains(["public", "private", "database", "nonroutable"], var.networktags_value_subnets)
+    error_message = "Network tags value for subnets must be one of: public, private, database, nonroutable."
+  }
+}
+
+variable "use_standard_security_group" {
+  description = "Set to false to supply own security groups instead of using one provided by standard VPC."
+  type        = bool
+  default     = true
+}
+
+variable "security_group_ids" {
+  description = "Security groups to apply to the instance if not using standard."
+  type        = list(string)
+  default     = []
+}
+
+variable "instance_type" {
+  description = "Bastion instance type."
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "iam_instance_profile_name" {
+  description = "The name of the IAM instance profile to run the instance as or leave null to create a profile."
+  type        = string
+  default     = null
+}
+
+variable "additional_iam_policies" {
+  description = "Existing IAM policies (as ARNs) this instance should have in addition to AmazonSSMManagedInstanceCore."
+  type        = list(string)
+  default     = []
+}
+
+variable "ami_filter" {
+  description = "List of maps used to create the AMI filter for the action runner AMI."
+  type        = map(list(string))
+  default = {
+    name = ["amzn2-ami-hvm-2.*-x86_64-ebs"]
+  }
+}
+
+variable "ami_owners" {
+  description = "The list of owners used to select the AMI of action runner instances."
+  type        = list(string)
+  default     = ["amazon"]
+}
+
+variable "user_data_template" {
+  description = "User Data template to use for provisioning EC2 Bastion Host."
+  type        = string
+  default     = "templates/amazon-linux.sh.tpl"
+}
+
+variable "user_data" {
+  description = "User data content. Will be ignored if `user_data_base64` is set."
+  type        = list(string)
+  default     = []
+}
+
+variable "user_data_base64" {
+  description = "The Base64-encoded user data to provide when launching the instances. If this is set then `user_data` will not be used."
+  type        = string
+  default     = ""
+}
+
+variable "root_block_device_volume_size" {
+  description = "The volume size (in GiB) to provision for the root block device. It cannot be smaller than the AMI it refers to."
+  type        = number
+  default     = 8
+}
+
+variable "additional_data_volume_config" {
+  description = "Configuration for additional EBS data volume. IMPORTANT: Since the root volume is mounted read-only for security, this additional volume is required for any persistent data storage or write operations"
+  type = object({
+    enabled     = bool
+    type        = string
+    size        = number
+    iops        = number
+    throughput  = number
+    mount_point = string
+  })
+  default = {
+    enabled     = false
+    type        = "gp3"
+    size        = 10
+    iops        = 3000
+    throughput  = 125
+    mount_point = "/data"
+  }
+}
+
+variable "data_volume_snapshot_config" {
+  description = "Configuration for automated EBS snapshots of the additional data volume using AWS Data Lifecycle Manager (DLM)"
+  type = object({
+    enabled           = bool
+    schedule_name     = string
+    schedule_interval = number
+    schedule_times    = list(string)
+    retention_count   = number
+    copy_tags         = bool
+  })
+  default = {
+    enabled           = false
+    schedule_name     = "daily-snapshots"
+    schedule_interval = 24
+    schedule_times    = ["03:00"]
+    retention_count   = 7
+    copy_tags         = true
+  }
+}
+
+variable "asg_config" {
+  description = "Configuration object for autoscaling group settings"
+  type = object({
+    min_size         = number
+    max_size         = number
+    desired_capacity = number
+  })
+  default = {
+    min_size         = 0
+    max_size         = 1
+    desired_capacity = 1
+  }
+
+  validation {
+    condition     = var.asg_config.min_size >= 0
+    error_message = "ASG minimum size must be 0 or greater."
+  }
+
+  validation {
+    condition     = var.asg_config.max_size >= var.asg_config.min_size
+    error_message = "ASG maximum size must be greater than or equal to minimum size."
+  }
+
+  validation {
+    condition     = var.asg_config.desired_capacity >= var.asg_config.min_size && var.asg_config.desired_capacity <= var.asg_config.max_size
+    error_message = "ASG desired capacity must be between minimum and maximum size."
+  }
+}
+
+variable "schedule_config" {
+  description = "Configuration object for autoscaling schedules"
+  type = object({
+    enabled             = bool
+    timezone            = string
+    scale_down_schedule = string
+    scale_up_schedule   = string
+  })
+  default = {
+    enabled             = false
+    timezone            = "UTC"
+    scale_down_schedule = "0 18 * * MON-FRI"
+    scale_up_schedule   = "0 8 * * MON-FRI"
   }
 }
 
@@ -100,7 +265,7 @@ variable "encryption_config" {
 # ----
 
 variable "monitoring_config" {
-  description = "Configuration object for CloudWatch monitoring"
+  description = "Configuration object for optional monitoring"
   type = object({
     enabled = bool
   })
@@ -110,7 +275,7 @@ variable "monitoring_config" {
 }
 
 variable "alarms_config" {
-  description = "Configuration object for CloudWatch alarms and SNS notifications"
+  description = "Configuration object for metric alarms and notifications"
   type = object({
     enabled          = bool
     create_sns_topic = bool
@@ -128,5 +293,19 @@ variable "alarms_config" {
       (!var.alarms_config.create_sns_topic && var.alarms_config.sns_topic_arn != "")
     )
     error_message = "sns_topic_arn must be empty when create_sns_topic is true, or provided when create_sns_topic is false."
+  }
+}
+
+# ----
+# Cost Estimation
+# ----
+
+variable "cost_estimation_config" {
+  description = "Configuration object for monthly cost estimation"
+  type = object({
+    enabled = bool
+  })
+  default = {
+    enabled = true
   }
 }

@@ -87,3 +87,75 @@ data "aws_pricing_product" "sns_requests" {
     value = local.pricing_location
   }
 }
+
+# ----
+# EC2 Pricing Data
+# ----
+
+# EC2 instance pricing
+data "aws_pricing_product" "ec2_instance" {
+  count = local.pricing_enabled && var.ec2_instance_count > 0 ? 1 : 0
+
+  service_code = "AmazonEC2"
+
+  filters {
+    field = "productFamily"
+    value = "Compute Instance"
+  }
+
+  filters {
+    field = "instanceType"
+    value = var.ec2_instance_type
+  }
+
+  filters {
+    field = "location"
+    value = local.pricing_location
+  }
+
+  filters {
+    field = "tenancy"
+    value = "Shared"
+  }
+
+  filters {
+    field = "operatingSystem"
+    value = "Linux"
+  }
+
+  filters {
+    field = "preInstalledSw"
+    value = "NA"
+  }
+
+  filters {
+    field = "capacitystatus"
+    value = "Used"
+  }
+}
+
+# ----
+# EBS Pricing Data
+# ----
+
+# EBS volume pricing
+data "aws_pricing_product" "ebs_volume" {
+  count = local.pricing_enabled && var.ebs_volume_count > 0 ? 1 : 0
+
+  service_code = "AmazonEC2"
+
+  filters {
+    field = "productFamily"
+    value = "Storage"
+  }
+
+  filters {
+    field = "usagetype"
+    value = "EBS:VolumeUsage.${var.ebs_volume_type}"
+  }
+
+  filters {
+    field = "location"
+    value = local.pricing_location
+  }
+}
