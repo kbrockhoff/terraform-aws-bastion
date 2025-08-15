@@ -99,6 +99,11 @@ data "aws_pricing_product" "ec2_instance" {
   service_code = "AmazonEC2"
 
   filters {
+    field = "productFamily"
+    value = "Compute Instance"
+  }
+
+  filters {
     field = "instanceType"
     value = var.ec2_instance_type
   }
@@ -114,12 +119,12 @@ data "aws_pricing_product" "ec2_instance" {
   }
 
   filters {
-    field = "operating-system"
+    field = "operatingSystem"
     value = "Linux"
   }
 
   filters {
-    field = "pre-installed-s-w"
+    field = "preInstalledSw"
     value = "NA"
   }
 
@@ -145,8 +150,8 @@ data "aws_pricing_product" "ebs_volume" {
   }
 
   filters {
-    field = "volumeType"
-    value = title(var.ebs_volume_type)
+    field = "usagetype"
+    value = "EBS:VolumeUsage.${var.ebs_volume_type}"
   }
 
   filters {
