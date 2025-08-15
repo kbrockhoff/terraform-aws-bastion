@@ -91,7 +91,7 @@ variable "security_group_ids" {
 variable "instance_type" {
   description = "Bastion instance type."
   type        = string
-  default     = "t2.micro"
+  default     = "t3.micro"
 }
 
 variable "iam_instance_profile_name" {
