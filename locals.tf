@@ -118,7 +118,10 @@ locals {
   ) : var.iam_instance_profile_name
 
   userdata_b64 = base64encode(templatefile("${path.module}/${var.user_data_template}", {
-    user_data = join("\n", var.user_data)
+    user_data                = join("\n", var.user_data)
+    mount_additional_volume  = var.additional_data_volume_config.enabled
+    additional_volume_device = "/dev/xvdf"
+    additional_volume_mount  = var.additional_data_volume_config.mount_point
   }))
 
   # KMS key logic - use provided key ID or create new one

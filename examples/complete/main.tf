@@ -37,6 +37,7 @@ module "main" {
   user_data                     = var.user_data
   user_data_base64              = var.user_data_base64
   root_block_device_volume_size = var.root_block_device_volume_size
+  additional_data_volume_config = var.additional_data_volume_config
   asg_config                    = var.asg_config
   schedule_config               = var.schedule_config
   encryption_config             = var.encryption_config

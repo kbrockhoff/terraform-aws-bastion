@@ -144,6 +144,57 @@ variable "root_block_device_volume_size" {
   default     = 8
 }
 
+variable "additional_data_volume_config" {
+  description = "Configuration for additional EBS data volume. IMPORTANT: Since the root volume is mounted read-only for security, this additional volume is required for any persistent data storage or write operations"
+  type = object({
+    enabled     = bool
+    type        = string
+    size        = number
+    iops        = number
+    throughput  = number
+    mount_point = string
+  })
+  default = {
+    enabled     = false
+    type        = "gp3"
+    size        = 10
+    iops        = 3000
+    throughput  = 125
+    mount_point = "/data"
+  }
+
+  validation {
+    condition     = contains(["gp2", "gp3", "io1", "io2", "st1", "sc1"], var.additional_data_volume_config.type)
+    error_message = "Volume type must be one of: gp2, gp3, io1, io2, st1, sc1."
+  }
+
+  validation {
+    condition     = var.additional_data_volume_config.size >= 1 && var.additional_data_volume_config.size <= 16384
+    error_message = "Volume size must be between 1 and 16384 GiB."
+  }
+
+  validation {
+    condition = (
+      var.additional_data_volume_config.type != "gp3" ||
+      (var.additional_data_volume_config.iops >= 3000 && var.additional_data_volume_config.iops <= 16000)
+    )
+    error_message = "For gp3 volumes, IOPS must be between 3000 and 16000."
+  }
+
+  validation {
+    condition = (
+      var.additional_data_volume_config.type != "gp3" ||
+      (var.additional_data_volume_config.throughput >= 125 && var.additional_data_volume_config.throughput <= 1000)
+    )
+    error_message = "For gp3 volumes, throughput must be between 125 and 1000 MiB/s."
+  }
+
+  validation {
+    condition     = can(regex("^/[a-z0-9_-]+$", var.additional_data_volume_config.mount_point))
+    error_message = "Mount point must be an absolute path starting with / and containing only lowercase letters, numbers, underscores, and hyphens."
+  }
+}
+
 variable "asg_config" {
   description = "Configuration object for autoscaling group settings"
   type = object({

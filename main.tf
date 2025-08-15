@@ -22,6 +22,22 @@ resource "aws_launch_template" "bastion" {
     }
   }
 
+  dynamic "block_device_mappings" {
+    for_each = var.additional_data_volume_config.enabled ? [1] : []
+    content {
+      device_name = "/dev/xvdf"
+      ebs {
+        volume_size           = var.additional_data_volume_config.size
+        volume_type           = var.additional_data_volume_config.type
+        iops                  = var.additional_data_volume_config.type == "gp3" || var.additional_data_volume_config.type == "io1" || var.additional_data_volume_config.type == "io2" ? var.additional_data_volume_config.iops : null
+        throughput            = var.additional_data_volume_config.type == "gp3" ? var.additional_data_volume_config.throughput : null
+        encrypted             = true
+        kms_key_id            = local.kms_key_id
+        delete_on_termination = true
+      }
+    }
+  }
+
   metadata_options {
     http_endpoint               = "enabled"
     http_tokens                 = "required"

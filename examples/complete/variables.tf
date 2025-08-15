@@ -144,6 +144,26 @@ variable "root_block_device_volume_size" {
   default     = 8
 }
 
+variable "additional_data_volume_config" {
+  description = "Configuration for additional EBS data volume. IMPORTANT: Since the root volume is mounted read-only for security, this additional volume is required for any persistent data storage or write operations"
+  type = object({
+    enabled     = bool
+    type        = string
+    size        = number
+    iops        = number
+    throughput  = number
+    mount_point = string
+  })
+  default = {
+    enabled     = false
+    type        = "gp3"
+    size        = 10
+    iops        = 3000
+    throughput  = 125
+    mount_point = "/data"
+  }
+}
+
 variable "asg_config" {
   description = "Configuration object for autoscaling group settings"
   type = object({

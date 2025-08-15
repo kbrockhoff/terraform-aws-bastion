@@ -7,6 +7,8 @@ practices.
 ## Features
 
 - Autoscaling group managed SSM session capable bastion hosts
+- Read-only root filesystem for enhanced security
+- Optional additional data volume for persistent storage
 - Scale to zero during off-hours
 - Monthly cost estimate submodule
 - Deployment pipeline least privilege IAM role submodule
@@ -324,6 +326,7 @@ This eliminates the need to manage different subnet IDs variable values for each
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Organization unique prefix to use for resource names. Recommend including environment and region. e.g. 'prod-usw2' | `string` | n/a | yes |
+| <a name="input_additional_data_volume_config"></a> [additional\_data\_volume\_config](#input\_additional\_data\_volume\_config) | Configuration for additional EBS data volume. IMPORTANT: Since the root volume is mounted read-only for security, this additional volume is required for any persistent data storage or write operations | <pre>object({<br/>    enabled     = bool<br/>    type        = string<br/>    size        = number<br/>    iops        = number<br/>    throughput  = number<br/>    mount_point = string<br/>  })</pre> | <pre>{<br/>  "enabled": false,<br/>  "iops": 3000,<br/>  "mount_point": "/data",<br/>  "size": 10,<br/>  "throughput": 125,<br/>  "type": "gp3"<br/>}</pre> | no |
 | <a name="input_additional_iam_policies"></a> [additional\_iam\_policies](#input\_additional\_iam\_policies) | Existing IAM policies (as ARNs) this instance should have in addition to AmazonSSMManagedInstanceCore. | `list(string)` | `[]` | no |
 | <a name="input_alarms_config"></a> [alarms\_config](#input\_alarms\_config) | Configuration object for metric alarms and notifications | <pre>object({<br/>    enabled          = bool<br/>    create_sns_topic = bool<br/>    sns_topic_arn    = string<br/>  })</pre> | <pre>{<br/>  "create_sns_topic": true,<br/>  "enabled": false,<br/>  "sns_topic_arn": ""<br/>}</pre> | no |
 | <a name="input_ami_filter"></a> [ami\_filter](#input\_ami\_filter) | List of maps used to create the AMI filter for the bastion host AMI. | `map(list(string))` | <pre>{<br/>  "name": [<br/>    "amzn2-ami-hvm-2.*-x86_64-ebs"<br/>  ]<br/>}</pre> | no |
