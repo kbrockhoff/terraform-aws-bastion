@@ -320,7 +320,7 @@ module "bastion_deployer" {
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_pricing"></a> [pricing](#module\_pricing) | ./modules/pricing | n/a |
+| <a name="module_pricing"></a> [pricing](#module\_pricing) | ./modules/cost-estimation | n/a |
 
 ## Resources
 
