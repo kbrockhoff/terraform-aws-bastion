@@ -34,7 +34,7 @@ body:
       render: hcl
       placeholder: |
         # Example of how the feature might work
-        module "vpc" {
+        module "this" {
           source = "..."
           
           # new feature configuration
@@ -68,16 +68,14 @@ body:
       label: AWS Services Involved
       description: Which AWS services would this feature involve?
       options:
-        - label: VPC
-        - label: Subnets
-        - label: Route Tables
-        - label: Internet Gateway
-        - label: NAT Gateway
-        - label: VPC Endpoints
-        - label: Security Groups
-        - label: NACLs
-        - label: VPC Peering
-        - label: Transit Gateway
+        - label: EC2
+        - label: Auto Scaling
+        - label: Systems Manager (SSM)
+        - label: EBS / Data Lifecycle Manager
+        - label: KMS
+        - label: CloudWatch
+        - label: SNS
+        - label: IAM
         - label: Other (please specify in additional context)
         
   - type: dropdown

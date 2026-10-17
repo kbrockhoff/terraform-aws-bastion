@@ -1,6 +1,8 @@
 # Contributing
 
-Thank you for your interest in contributing to this Terraform module! We welcome contributions from the community and appreciate your help in making this module better.
+Thank you for your interest in contributing to this Terraform module! We
+welcome contributions from the community and appreciate your help in making
+this module better.
 
 ## Table of Contents
 
@@ -15,7 +17,9 @@ Thank you for your interest in contributing to this Terraform module! We welcome
 
 ## Code of Conduct
 
-This project adheres to a code of conduct. By participating, you are expected to uphold this code. Please be respectful and constructive in all interactions.
+This project adheres to a code of conduct. By participating, you are
+expected to uphold this code. Please be respectful and constructive in
+all interactions.
 
 ## Getting Started
 
@@ -30,20 +34,22 @@ This project adheres to a code of conduct. By participating, you are expected to
 
 ### Prerequisites
 
-- [Terraform](https://www.terraform.io/downloads.html) >= 1.5
-- [Go](https://golang.org/dl/) >= 1.23 (for testing)
+- [Terraform](https://www.terraform.io/downloads.html) >= 1.11
+- [Go](https://golang.org/dl/) >= 1.26 (for testing)
 - AWS CLI configured with appropriate credentials
 - Git
 
 ### Local Development
 
 1. Clone your fork:
+
    ```bash
    git clone https://github.com/YOUR-USERNAME/terraform-aws-bastion.git
    cd terraform-aws-bastion
    ```
 
 2. Create a new branch:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -126,7 +132,7 @@ Before submitting changes:
 
 ### Terraform Code Style
 
-Follow the guidelines in [`.ruler/terraform-style.md`](.ruler/terraform-style.md):
+Follow the Terraform Style Guide in [`AGENTS.md`](../AGENTS.md#terraform-style-guide):
 
 - Use `terraform fmt` for consistent formatting
 - Use snake_case for all identifiers
@@ -134,7 +140,7 @@ Follow the guidelines in [`.ruler/terraform-style.md`](.ruler/terraform-style.md
 - Use explicit type constraints
 - Follow the established file organization
 
-### Example:
+### Example
 
 ```hcl
 variable "vpc_cidr_block" {
@@ -164,7 +170,7 @@ output "vpc_id" {
 
 Use clear, descriptive commit messages:
 
-```
+```text
 feat: add support for VPC flow logs
 
 - Add vpc_flow_logs_enabled variable
@@ -173,6 +179,7 @@ feat: add support for VPC flow logs
 ```
 
 **Commit types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
