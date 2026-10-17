@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/kbrockhoff/terraform-module.git",
   "ref": "feature/deployer-contract",
-  "commit": "2f4fae8498daa5364c53feb26942f36000ca53fa",
-  "synced_at": "2026-10-17T19:33:34Z"
+  "commit": "ae1fa0dc363f5455a3bddacd0004fc3cb0cb87d6",
+  "synced_at": "2026-10-17T19:45:11Z"
 }

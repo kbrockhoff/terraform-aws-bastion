@@ -1,57 +1,27 @@
-# Pull Request
+<!--
+Title: Conventional Commit, e.g. `feat(vpc): add IPv6 egress-only gateway`.
+Use `!` after the type/scope for breaking changes. Release notes are generated from it.
+-->
 
-## Description
-<!-- Provide a brief description of the changes in this PR -->
+## Summary
+<!-- What changes and why, in one to three sentences. Link issues with "Closes #123". -->
 
-## Type of Change
-<!-- Check all that apply -->
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Documentation update
-- [ ] Refactoring (no functional changes)
-- [ ] Performance improvement
-- [ ] Test improvements
+## Changes
+<!-- One bullet per user-visible change: inputs, outputs, resources, behavior, docs. -->
+-
 
-## Changes Made
-<!-- List the specific changes made in this PR -->
-- 
-- 
-- 
+## Breaking changes
+<!-- "None", or what breaks and the steps users take to migrate. -->
+None
 
-## Testing
-<!-- Describe the tests you ran to verify your changes -->
-- [ ] I have run `terraform fmt` on all modified files
-- [ ] I have run `terraform validate` on all modified files
-- [ ] I have tested the changes locally
-- [ ] I have added/updated tests as needed
-- [ ] All existing tests pass
+## Validation
+- [ ] `make validate` passes (format, check, lint, test, docs)
+- [ ] Tests or examples cover new or changed behavior
+- [ ] `modules/deployer` and `modules/cost-estimation` match any resource changes
+- [ ] README, variable and output descriptions match the change
 
-## Terraform Version Compatibility
-<!-- Check all versions that have been tested -->
-- [ ] Terraform >= 1.11
-- [ ] Latest Terraform version
+<!-- Explain any unchecked box or skipped step, e.g. tests not run without AWS credentials. -->
 
-## Documentation
-- [ ] I have updated the README.md if needed
-- [ ] I have updated variable descriptions
-- [ ] I have updated output descriptions
-- [ ] I have added examples if appropriate
-
-## Breaking Changes
-<!-- If this is a breaking change, describe what users need to do to migrate -->
-- [ ] This is not a breaking change
-- [ ] This is a breaking change (describe migration path below)
-
-<!-- Migration instructions for breaking changes -->
-
-## Checklist
-- [ ] My code follows the project's style guidelines
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] My changes generate no new warnings
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
-
-## Additional Notes
-<!-- Add any additional notes, screenshots, or context about the PR -->
+## Review notes
+<!-- Where to look first, risky areas, trade-offs, follow-ups. "None" if straightforward. -->
+None
