@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.0](https://github.com/kbrockhoff/terraform-aws-bastion/compare/v0.1.0...v1.0.0) (2026-10-24)
+## [0.2.0](https://github.com/kbrockhoff/terraform-aws-bastion/compare/v0.1.0...v0.2.0) (2026-10-24)
 
 
 ### ⚠ BREAKING CHANGES
