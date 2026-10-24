@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.0](https://github.com/kbrockhoff/terraform-aws-bastion/compare/v0.1.0...v0.2.0) (2026-10-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cost-estimation:** modules/pricing is now modules/cost-estimation with different inputs, and its extra outputs are removed. cost_breakdown replaces ebs_volumes with ebs_root_volumes and ebs_data_volumes.
+* **deployer:** modules/bootstrap is removed, along with its role, github_org, github_repo, environment and state backend inputs and its role and policy outputs. Cut over in this order: apply terraform-aws-cicdrole and modules/deployer with iam_role_name = module.<cicdrole>.role_name; point the pipeline at the <name_prefix>-cicd-deployer role and confirm a plan; then remove the old bootstrap module, which destroys the <name_prefix>-github-actions role.
+
+### Code Refactoring
+
+* **cost-estimation:** replace pricing submodule with cost-estimation ([06fe543](https://github.com/kbrockhoff/terraform-aws-bastion/commit/06fe54397e582c5d0d9076868ed0108b9ac2dee0))
+* **deployer:** replace bootstrap submodule with deployer policies ([4ae4937](https://github.com/kbrockhoff/terraform-aws-bastion/commit/4ae4937d9de3695a2f9980cbcaf6a5de1792749c))
+
 ## 0.1.0 (2025-08-15)
 
 
