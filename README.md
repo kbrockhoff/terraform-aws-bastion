@@ -274,30 +274,58 @@ module "custom_resources" {
 Resources deployed to subnets use lookup by `NetworkTags` values to determine which subnets to deploy to. 
 This eliminates the need to manage different subnet IDs variable values for each environment.
 
+## CI/CD Permissions
+
+The [`modules/deployer`](modules/deployer) submodule creates least privilege IAM policies that
+let a CI/CD pipeline plan, apply and destroy this module. Attach them to the role created by
+[terraform-aws-cicdrole](https://github.com/kbrockhoff/terraform-aws-cicdrole), which provides
+the OIDC trust and Terraform state access. Apply both from a privileged platform configuration:
+
+```hcl
+module "cicd_role" {
+  source = "github.com/kbrockhoff/terraform-aws-cicdrole"
+
+  name_prefix   = "prod-usw2"
+  cicd_provider = "github-actions"
+  git_repos     = ["my-infra-repo"]
+  # ...
+}
+
+module "bastion_deployer" {
+  source = "github.com/kbrockhoff/terraform-aws-bastion//modules/deployer"
+
+  name_prefix   = "prod-usw2" # same prefix the pipeline uses for this module
+  iam_role_name = module.cicd_role.role_name
+  partition     = data.aws_partition.current.partition
+  region        = data.aws_region.current.region
+  account_id    = data.aws_caller_identity.current.account_id
+}
+```
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0 |
 
 ## Providers
 
 | Name | Version |
-|------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.9.0 |
+| ---- | ------- |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.0 |
 
 ## Modules
 
 | Name | Source | Version |
-|------|--------|---------|
-| <a name="module_pricing"></a> [pricing](#module\_pricing) | ./modules/pricing | n/a |
+| ---- | ------ | ------- |
+| <a name="module_pricing"></a> [pricing](#module\_pricing) | ./modules/cost-estimation | n/a |
 
 ## Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [aws_autoscaling_group.bastion](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group) | resource |
 | [aws_autoscaling_schedule.scale_down](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_schedule) | resource |
 | [aws_autoscaling_schedule.scale_up](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_schedule) | resource |
@@ -327,7 +355,7 @@ This eliminates the need to manage different subnet IDs variable values for each
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Organization unique prefix to use for resource names. Recommend including environment and region. e.g. 'prod-usw2' | `string` | n/a | yes |
 | <a name="input_additional_data_volume_config"></a> [additional\_data\_volume\_config](#input\_additional\_data\_volume\_config) | Configuration for additional EBS data volume. IMPORTANT: Since the root volume is mounted read-only for security, this additional volume is required for any persistent data storage or write operations | <pre>object({<br/>    enabled     = bool<br/>    type        = string<br/>    size        = number<br/>    iops        = number<br/>    throughput  = number<br/>    mount_point = string<br/>  })</pre> | <pre>{<br/>  "enabled": false,<br/>  "iops": 3000,<br/>  "mount_point": "/data",<br/>  "size": 10,<br/>  "throughput": 125,<br/>  "type": "gp3"<br/>}</pre> | no |
 | <a name="input_additional_iam_policies"></a> [additional\_iam\_policies](#input\_additional\_iam\_policies) | Existing IAM policies (as ARNs) this instance should have in addition to AmazonSSMManagedInstanceCore. | `list(string)` | `[]` | no |
@@ -342,7 +370,7 @@ This eliminates the need to manage different subnet IDs variable values for each
 | <a name="input_encryption_config"></a> [encryption\_config](#input\_encryption\_config) | Configuration object for encryption settings and KMS key management | <pre>object({<br/>    create_kms_key               = bool<br/>    kms_key_id                   = string<br/>    kms_key_deletion_window_days = number<br/>  })</pre> | <pre>{<br/>  "create_kms_key": true,<br/>  "kms_key_deletion_window_days": 14,<br/>  "kms_key_id": ""<br/>}</pre> | no |
 | <a name="input_environment_type"></a> [environment\_type](#input\_environment\_type) | Environment type for resource configuration defaults. Select 'None' to use individual config values. | `string` | `"Development"` | no |
 | <a name="input_iam_instance_profile_name"></a> [iam\_instance\_profile\_name](#input\_iam\_instance\_profile\_name) | The name of the IAM instance profile to run the instance as or leave null to create a profile. | `string` | `null` | no |
-| <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | Bastion instance type. | `string` | `"t3.micro"` | no |
+| <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | EC2 instance type for the bastion host (e.g., t3.micro, t3.small). | `string` | `"t3.micro"` | no |
 | <a name="input_monitoring_config"></a> [monitoring\_config](#input\_monitoring\_config) | Configuration object for optional monitoring | <pre>object({<br/>    enabled = bool<br/>  })</pre> | <pre>{<br/>  "enabled": false<br/>}</pre> | no |
 | <a name="input_networktags_name"></a> [networktags\_name](#input\_networktags\_name) | Name of the network tags key used for subnet classification | `string` | `"NetworkTags"` | no |
 | <a name="input_networktags_value_subnets"></a> [networktags\_value\_subnets](#input\_networktags\_value\_subnets) | Network tag values to use in looking up a random subnet to place instance in. Only used if subnet not specified. | `string` | `"private"` | no |
@@ -359,7 +387,7 @@ This eliminates the need to manage different subnet IDs variable values for each
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_alarm_at_max_capacity_arn"></a> [alarm\_at\_max\_capacity\_arn](#output\_alarm\_at\_max\_capacity\_arn) | ARN of the at max capacity alarm |
 | <a name="output_alarm_capacity_not_met_arn"></a> [alarm\_capacity\_not\_met\_arn](#output\_alarm\_capacity\_not\_met\_arn) | ARN of the capacity not met alarm |
 | <a name="output_alarm_excessive_scaling_arn"></a> [alarm\_excessive\_scaling\_arn](#output\_alarm\_excessive\_scaling\_arn) | ARN of the excessive scaling alarm |

@@ -39,11 +39,11 @@ terraform.rc
 
 # IDEs
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
 *.sublime-project
 *.sublime-workspace
 
-# Ruler
-**/*.bak
-claude_desktop_config.json
+# AI agents
+.claude/settings.local.json
 
